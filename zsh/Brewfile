@@ -1,0 +1,17 @@
+# Core Shell
+brew "git"
+
+# The Prompt
+brew "starship"
+
+# Modern Unix Tools
+brew "eza"        # ls replacement
+brew "bat"        # cat replacement
+brew "zoxide"     # cd replacement
+brew "ripgrep"    # grep replacement
+brew "fd"         # find replacement
+brew "fzf"        # fuzzy finder
+
+# Optional but recommended
+brew "tldr"       # Simplified man pages
+brew "delta"      # Better git diffs
