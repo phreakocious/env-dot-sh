@@ -58,6 +58,11 @@ if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 fi
 
+# zsh-completions
+if [ ! -d "$ZSH_CUSTOM/plugins/zsh-completions" ]; then
+  git clone https://github.com/zsh-users/zsh-completions "$ZSH_CUSTOM/plugins/zsh-completions"
+fi
+
 # fzf-tab (replaces default tab completion with fzf)
 if [ ! -d "$ZSH_CUSTOM/plugins/fzf-tab" ]; then
   git clone https://github.com/Aloxaf/fzf-tab "$ZSH_CUSTOM/plugins/fzf-tab"
@@ -75,6 +80,7 @@ cp "$SCRIPT_DIR/tips.zsh" "$HOME/.zsh_tips.zsh"
 # 5. Setup User Binaries
 echo "Setting up user binaries..."
 mkdir -p "$HOME/bin"
+mkdir -p "$HOME/.local/bin"
 
 # Link Sublime Text
 if [ -d "/Applications/Sublime Text.app" ]; then

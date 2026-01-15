@@ -9,7 +9,7 @@ elif [[ -f "/usr/local/bin/brew" ]]; then
 fi
 
 # Path to your oh-my-zsh installation.
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 export ZSH="$HOME/.oh-my-zsh"
 
 # =============================================================================
@@ -25,8 +25,10 @@ fi
 # Plugins to load
 plugins=(
     git
+    iterm2
     zsh-autosuggestions
     zsh-syntax-highlighting
+    zsh-completions
     fzf
     fzf-tab
     vi-mode
@@ -36,6 +38,9 @@ plugins=(
 )
 
 source $ZSH/oh-my-zsh.sh
+
+# iTerm2 Shell Integration
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # =============================================================================
 #  User Configuration
@@ -63,7 +68,7 @@ alias la='ls -a'
 export HISTSIZE=50000
 export SAVEHIST=10000
 setopt HIST_IGNORE_DUPS
-setopt SHARE_HISTORY
+unsetopt SHARE_HISTORY # Prevents overlapping history between panes
 
 # =============================================================================
 #  Modern Unix Upgrades
@@ -145,12 +150,51 @@ fi
 
 # Ripgrep (Modern grep)
 if command -v rg >/dev/null; then
-    alias grep='rg'
+    unalias grep 2>/dev/null
+    function grep {
+        local legacy=0
+        for arg in "$@"; do
+            if [[ "$arg" == "--include"* || "$arg" == "--exclude"* || "$arg" == "-R" || "$arg" == "-r" ]]; then
+                legacy=1; break
+            fi
+        done
+
+        if [[ $legacy -eq 1 ]]; then
+            echo -e "\033[0;33m[Modern Unix Tip] Legacy 'grep' flags detected.\033[0m"
+            [[ "$*" == *"--include"* ]] && echo -e "  --include='*.py' -> -g '*.py'"
+            [[ "$*" == *"--exclude"* ]] && echo -e "  --exclude='*.py' -> -g '!*.py'"
+            [[ "$*" == *"-r"* || "$*" == *"-R"* ]] && echo -e "  -r/-R -> (recursive by default in rg)"
+            echo -e "\033[0;32mFalling back to system 'grep'...\033[0m"
+            command grep "$@"
+        else
+            rg "$@"
+        fi
+    }
 fi
 
 # Fd (Modern find)
 if command -v fd >/dev/null; then
-    alias find='fd'
+    unalias find 2>/dev/null
+    function find {
+        local legacy=0
+        for arg in "$@"; do
+            if [[ "$arg" == "-name" || "$arg" == "-iname" || "$arg" == "-exec" || "$arg" == "-type" || "$arg" == "-maxdepth" || "$arg" == "-mindepth" || "$arg" == "-o" || "$arg" == "-a" || "$arg" == "-print0" ]]; then
+                legacy=1; break
+            fi
+        done
+
+        if [[ $legacy -eq 1 ]]; then
+            echo -e "\033[0;33m[Modern Unix Tip] Legacy 'find' flags detected.\033[0m"
+            [[ "$*" == *"-name"* ]] && echo -e "  -name 'foo' -> 'foo' (or -g 'foo')"
+            [[ "$*" == *"-iname"* ]] && echo -e "  -iname 'foo' -> -i 'foo'"
+            [[ "$*" == *"-type"* ]] && echo -e "  -type f/d   -> -t f/d"
+            [[ "$*" == *"-exec"* ]] && echo -e "  -exec ...   -> -x ..."
+            echo -e "\033[0;32mFalling back to system 'find'...\033[0m"
+            command find "$@"
+        else
+            fd "$@"
+        fi
+    }
 fi
 
 # =============================================================================
@@ -164,6 +208,25 @@ elif [ -f /usr/local/opt/fzf/install ]; then
     # Fallback for Homebrew install location
     [ -f /usr/local/opt/fzf/shell/key-bindings.zsh ] && source /usr/local/opt/fzf/shell/key-bindings.zsh
     [ -f /usr/local/opt/fzf/shell/completion.zsh ] && source /usr/local/opt/fzf/shell/completion.zsh
+fi
+
+# FZF Configuration: Stop looking at gitignore
+if command -v fd >/dev/null; then
+    # --no-ignore: Show gitignored files
+    # --hidden: Show hidden files
+    # --follow: Follow symlinks
+    # --exclude .git: But still don't show the .git directory itself
+    export FZF_DEFAULT_COMMAND='fd --type f --no-ignore --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --no-ignore --hidden --follow --exclude .git'
+
+    # Apply to fzf **<TAB> completion
+    _fzf_compgen_path() {
+        fd --hidden --follow --exclude ".git" --no-ignore . "$1"
+    }
+    _fzf_compgen_dir() {
+        fd --type d --hidden --follow --exclude ".git" --no-ignore . "$1"
+    }
 fi
 
 # FZF Tab styling
