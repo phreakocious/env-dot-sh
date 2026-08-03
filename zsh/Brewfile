@@ -12,9 +12,23 @@ brew "ripgrep"    # grep replacement
 brew "fd"         # find replacement
 brew "fzf"        # fuzzy finder
 
-# Optional but recommended
-brew "tlrc"       # Simplified man pages (official Rust tldr client)
+brew "atuin"      # SQLite shell history, replaces Ctrl-R
+
+# Git
+brew "lazygit"    # git TUI
+brew "gh"         # GitHub CLI
 brew "git-delta"  # Better git diffs
+brew "difftastic" # Structural diff; `git dft` (delta stays the default pager)
+
+# Inspecting the machine
+brew "dust"       # du replacement
+brew "duf"        # df replacement
+brew "btop"       # top/htop replacement
+
+# Odds and ends
+brew "jq"         # JSON processor
+brew "hyperfine"  # Benchmark commands; also how you profile this shell
+brew "tlrc"       # Simplified man pages (official Rust tldr client)
 
 # Required: eza --icons and starship's default prompt symbols are Nerd Font glyphs.
 # Without this they render as tofu. Remember to select it in your terminal profile.

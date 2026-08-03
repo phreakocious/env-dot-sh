@@ -22,9 +22,23 @@ tips=(
 
     "🔍 \033[1;32mFZF Tab:\033[0m Preview directories during tab completion.\n   Try: Type \033[1;34mcd <Tab>\033[0m to see previews."
 
-    "⚡ \033[1;32mRipgrep (rg):\033[0m Blazing fast code search.\n   Try: \033[1;34mrg 'function_name'\033[0m (replaces grep)"
+    "⚡ \033[1;32mRipgrep (rg):\033[0m Blazing fast code search, recursive by default.\n   Try: \033[1;34mrg 'function_name'\033[0m (type 'rg' — 'grep' is still real grep)"
 
-    "⚡ \033[1;32mFd:\033[0m Faster, friendlier 'find'.\n   Try: \033[1;34mfd pattern\033[0m (replaces find)"
+    "⚡ \033[1;32mFd:\033[0m Faster, friendlier 'find'.\n   Try: \033[1;34mfd pattern\033[0m (pattern is a regex, not a glob; -H for hidden)"
+
+    "🧠 \033[1;32mAtuin (Ctrl-R):\033[0m History in SQLite — searchable, with exit code and cwd.\n   Try: \033[1;34mCtrl-R\033[0m, then \033[1;34mTab\033[0m to scope the search to this directory."
+
+    "🌳 \033[1;32mLazygit:\033[0m Stage hunks, rebase and cherry-pick without memorising flags.\n   Try: \033[1;34mlazygit\033[0m in any repo."
+
+    "🔬 \033[1;32mDifftastic:\033[0m Diff that understands syntax — ignores pure reformatting.\n   Try: \033[1;34mgit dft\033[0m (delta stays your default pager)"
+
+    "💾 \033[1;32mDust / Duf:\033[0m Find what ate the disk.\n   Try: \033[1;34mdust\033[0m (biggest dirs here) or \033[1;34mduf\033[0m (free space per mount)"
+
+    "📊 \033[1;32mBtop:\033[0m Process and resource monitor worth actually looking at.\n   Try: \033[1;34mbtop\033[0m"
+
+    "⏱️  \033[1;32mHyperfine:\033[0m Benchmark any command with proper warmup and stats.\n   Try: \033[1;34mhyperfine 'zsh -i -c exit'\033[0m (times your own shell startup)"
+
+    "🐙 \033[1;32mGitHub CLI:\033[0m PRs and issues without the browser.\n   Try: \033[1;34mgh pr create\033[0m or \033[1;34mgh pr checkout 42\033[0m"
 
     "📦 \033[1;32mExtract:\033[0m Universal archive extractor.\n   Try: \033[1;34mextract archive.tar.gz\033[0m (works for zip, 7z, rar...)"
 

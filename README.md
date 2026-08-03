@@ -8,19 +8,31 @@ Just one way to setup your macOS terminal environment.
 - **Framework:** [Oh My Zsh](https://ohmyz.sh/) for plugin management and robust defaults.
 - **Modern Unix Upgrades:**
     - `eza`: A modern replacement for `ls` (with icons and git integration).
-    - `zoxide`: A smarter `cd` command that learns your habits (`z`).
+    - `zoxide`: Takes over `cd` so it jumps by keyword and learns your habits (`cdi` to pick interactively).
     - `bat`: A `cat` clone with syntax highlighting and Git integration.
     - `ripgrep` (`rg`): An extremely fast alternative to `grep`.
     - `fd`: A simple, fast, and user-friendly alternative to `find`.
     - `fzf`: A general-purpose command-line fuzzy finder.
     - `tldr`: Simplified and community-driven man pages.
-    - `delta`: A syntax-highlighting pager for git, diff, and grep output.
+- **History:** [`atuin`](https://atuin.sh/) replaces `Ctrl-R` with a SQLite-backed search that records exit code, duration, and working directory. Press `Tab` inside it to scope results to the current directory. Local-only unless you run `atuin register`.
+- **Git:**
+    - `delta`: A syntax-highlighting pager, wired in as git's default.
+    - `difftastic`: A structural diff that ignores pure reformatting, on demand via `git dft`.
+    - `lazygit`: A TUI for staging hunks, rebasing, and cherry-picking.
+    - `gh`: The GitHub CLI.
+- **Inspecting the machine:** `dust` (`du`), `duf` (`df`), `btop` (`top`), `hyperfine` (benchmarking), `jq` (JSON).
 - **Enhanced Completion:** `fzf-tab` replaces the default Zsh completion menu with an interactive fuzzy finder.
 - **Productivity:**
     - `zsh-autosuggestions`: Fish-like fast autosuggestions.
     - `zsh-syntax-highlighting`: Fish-like syntax highlighting for the command line.
     - `vi-mode`: Robust Vi/Vim keybindings for the shell.
 - **Daily Tips:** A custom "Tip of the Day" system to help you discover new CLI tools and shortcuts.
+
+### What this deliberately doesn't do
+
+**`grep` and `find` are left alone.** `rg` and `fd` are better, but they aren't drop-in replacements, and shadowing the originals hides that. The flag differences are easy to spot; the dialect differences aren't. `grep 'a\+b'` is a POSIX basic regex meaning "one or more `a`", while `rg 'a\+b'` matches a literal `+` — both compile, neither errors, and the results differ. `fd`'s pattern is a regex rather than a glob, and it skips hidden files by default. So type `rg` and `fd` when you want them. As a bonus, your habits keep working on a bare server.
+
+`ls` is the exception: it's wrapped, because `eza` genuinely is close enough and `ls -ltr` is too deep in the fingers to give up.
 
 ## Installation
 

@@ -156,60 +156,17 @@ if command -v bat >/dev/null; then
     export MANPAGER="sh -c 'col -bx | bat -l man -p'" # Use bat for man pages
 fi
 
-# Ripgrep (Modern grep)
-if command -v rg >/dev/null; then
-    unalias grep 2>/dev/null
-    function grep {
-        local legacy=0
-        for arg in "$@"; do
-            if [[ "$arg" == "--include"* || "$arg" == "--exclude"* || "$arg" == "-R" || "$arg" == "-r" ]]; then
-                legacy=1; break
-            fi
-        done
-
-        if [[ $legacy -eq 1 ]]; then
-            # Tips go to stderr so they never land in a pipe or a $(...) capture.
-            {
-                echo -e "\033[0;33m[Modern Unix Tip] Legacy 'grep' flags detected.\033[0m"
-                [[ "$*" == *"--include"* ]] && echo -e "  --include='*.py' -> -g '*.py'"
-                [[ "$*" == *"--exclude"* ]] && echo -e "  --exclude='*.py' -> -g '!*.py'"
-                [[ "$*" == *"-r"* || "$*" == *"-R"* ]] && echo -e "  -r/-R -> (recursive by default in rg)"
-                echo -e "\033[0;32mFalling back to system 'grep'...\033[0m"
-            } >&2
-            command grep "$@"
-        else
-            rg "$@"
-        fi
-    }
-fi
-
-# Fd (Modern find)
-if command -v fd >/dev/null; then
-    unalias find 2>/dev/null
-    function find {
-        local legacy=0
-        for arg in "$@"; do
-            if [[ "$arg" == "-name" || "$arg" == "-iname" || "$arg" == "-exec" || "$arg" == "-type" || "$arg" == "-maxdepth" || "$arg" == "-mindepth" || "$arg" == "-o" || "$arg" == "-a" || "$arg" == "-print0" ]]; then
-                legacy=1; break
-            fi
-        done
-
-        if [[ $legacy -eq 1 ]]; then
-            # Tips go to stderr so they never land in a pipe or a $(...) capture.
-            {
-                echo -e "\033[0;33m[Modern Unix Tip] Legacy 'find' flags detected.\033[0m"
-                [[ "$*" == *"-name"* ]] && echo -e "  -name 'foo' -> 'foo' (or -g 'foo')"
-                [[ "$*" == *"-iname"* ]] && echo -e "  -iname 'foo' -> -i 'foo'"
-                [[ "$*" == *"-type"* ]] && echo -e "  -type f/d   -> -t f/d"
-                [[ "$*" == *"-exec"* ]] && echo -e "  -exec ...   -> -x ..."
-                echo -e "\033[0;32mFalling back to system 'find'...\033[0m"
-            } >&2
-            command find "$@"
-        else
-            fd "$@"
-        fi
-    }
-fi
+# Ripgrep and fd deliberately keep their own names.
+#
+# We used to shadow `grep` and `find` with wrappers that sniffed for legacy
+# flags and fell back to the real tool. They caught flag differences but could
+# not catch the one that actually bites: regex dialect. `grep 'a\+b'` is BRE and
+# means "one or more a"; `rg 'a\+b'` means a literal plus. Both compile, neither
+# errors, and the results differ. Same class of trap in fd, where the pattern is
+# a regex rather than a glob and hidden files are skipped by default.
+#
+# So: type `rg` and `fd` when you want them, and `grep`/`find` stay honest —
+# which is also what you get on any server that doesn't have these installed.
 
 # =============================================================================
 #  FZF & Interactive Tools
@@ -238,6 +195,15 @@ if command -v fd >/dev/null; then
     _fzf_compgen_dir() {
         fd --type d --hidden --follow --exclude ".git" --no-ignore . "$1"
     }
+fi
+
+# Atuin (SQLite-backed shell history). Must init *after* fzf so it wins the
+# Ctrl-R binding — fzf keeps everything else (Ctrl-T files, Alt-C dirs, **<TAB>).
+# --disable-up-arrow leaves Up as plain "previous command", which is muscle
+# memory worth keeping; Ctrl-R is where the searching happens.
+# Sync is off unless you run `atuin register`; the db is local either way.
+if command -v atuin >/dev/null; then
+    eval "$(atuin init zsh --disable-up-arrow)"
 fi
 
 # FZF Tab styling

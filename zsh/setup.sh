@@ -105,7 +105,21 @@ if command -v delta >/dev/null; then
     git config --global delta.navigate true
 fi
 
-# 5. Setup User Binaries
+# difftastic on demand as `git dft`. Left off core.pager on purpose: structural
+# diffs are the right tool some of the time, not all of it. delta keeps the job.
+if command -v difft >/dev/null; then
+    git config --global difftool.difftastic.cmd 'difft "$LOCAL" "$REMOTE"'
+    git config --global alias.dft 'difftool -t difftastic'
+fi
+
+# 5. Import existing shell history into atuin (one time only — re-importing
+# would duplicate every entry, so key off whether the db already exists).
+if command -v atuin >/dev/null && [ ! -f "$HOME/.local/share/atuin/history.db" ]; then
+    echo "Importing existing shell history into atuin..."
+    atuin import auto
+fi
+
+# 6. Setup User Binaries
 echo "Setting up user binaries..."
 mkdir -p "$HOME/bin"
 mkdir -p "$HOME/.local/bin"
