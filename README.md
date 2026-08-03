@@ -39,7 +39,7 @@ cd env-dot-sh
 1.  **Homebrew:** Installs Homebrew if missing and bundles all required tools via `zsh/Brewfile`.
 2.  **Oh My Zsh:** Installs the framework and essential third-party plugins.
 3.  **Config:** Backs up your existing `~/.zshrc`, then *symlinks* the repo copy — so edits here take effect immediately. Re-running is safe.
-4.  **Git:** Points `git` at `delta` for diffs (writes three keys to `~/.gitconfig`).
+4.  **Git:** Links `git/ignore` to `~/.config/git/ignore` so Finder and editor droppings are ignored in *every* repo on the machine, and points `git` at `delta` for diffs (three keys in `~/.gitconfig`).
 5.  **Utilities:** Sets up `~/bin` and links common applications like Sublime Text (`subl`) and Sublime Merge (`smerge`) if found.
 
 > **Set your terminal font to Hack Nerd Font afterwards.** The Brewfile installs it, but `eza --icons` and Starship's default prompt symbols render as tofu until your terminal profile actually selects it.

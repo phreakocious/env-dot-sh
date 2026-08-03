@@ -4,6 +4,7 @@
 OMZ_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="$OMZ_DIR/custom"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"  # absolute: symlinks below need it
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Symlink, don't copy: edits in the repo then take effect immediately, and
 # re-running this script doesn't pile up backups of files it created itself.
@@ -89,9 +90,16 @@ echo "Linking configuration..."
 link "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
 link "$SCRIPT_DIR/tips.zsh" "$HOME/.zsh_tips.zsh"
 
-# 4. Wire up delta (installing it does nothing on its own)
+# 4. Git configuration
+echo "Configuring git..."
+
+# git reads ~/.config/git/ignore on its own, so this needs no core.excludesFile
+# key — and setting none means we can't clobber one you already have.
+mkdir -p "$HOME/.config/git"
+link "$REPO_DIR/git/ignore" "$HOME/.config/git/ignore"
+
+# delta does nothing until git is told to use it
 if command -v delta >/dev/null; then
-    echo "Configuring git to use delta as its pager..."
     git config --global core.pager delta
     git config --global interactive.diffFilter "delta --color-only"
     git config --global delta.navigate true

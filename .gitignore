@@ -1,0 +1,4 @@
+# Your machine's noise is handled globally by git/ignore (linked to
+# ~/.config/git/ignore by setup.sh). This file repeats only the one that
+# reliably escapes, so clones on machines without that link stay clean.
+.DS_Store

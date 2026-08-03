@@ -1,0 +1,19 @@
+# Machine-level noise that never belongs in any repo, on any project.
+#
+# setup.sh links this to ~/.config/git/ignore, which git reads automatically —
+# no core.excludesFile setting required. Keep this list to things *your machine*
+# creates. Things a *project* creates belong in that project's own .gitignore.
+
+# macOS Finder / Spotlight
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# vim (EDITOR=vim)
+*.swp
+*.swo
+*~
+
+# Sublime
+*.sublime-workspace
