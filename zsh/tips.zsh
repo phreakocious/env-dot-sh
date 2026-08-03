@@ -2,9 +2,9 @@
 
 # Array of tips about the installed modern tools
 tips=(
-    "🚀 \033[1;32mZoxide (z):\033[0m Jump to frequently visited directories.\n   Try: \033[1;34mz env\033[0m (matches 'env-dot-sh')"
-    
-    "🚀 \033[1;32mZoxide (z):\033[0m Go back to the previous directory interactively.\n   Try: \033[1;34mzi\033[0m"
+    "🚀 \033[1;32mZoxide (cd):\033[0m 'cd' jumps to frequently visited dirs by keyword.\n   Try: \033[1;34mcd env\033[0m (matches 'env-dot-sh' from anywhere)"
+
+    "🚀 \033[1;32mZoxide (cdi):\033[0m Pick from your visited directories interactively.\n   Try: \033[1;34mcdi\033[0m"
 
     "📂 \033[1;32mEza (ls):\033[0m List files with a tree view.\n   Try: \033[1;34mlt\033[0m (aliased to 'eza --tree --level=2')"
     

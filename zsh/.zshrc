@@ -22,19 +22,20 @@ else
     ZSH_THEME="robbyrussell"
 fi
 
-# Plugins to load
+# Plugins to load.
+# Order matters: fzf-tab must come before anything that wraps ZLE widgets, and
+# zsh-syntax-highlighting must be dead last or it misses later-defined widgets.
 plugins=(
     git
     iterm2
-    zsh-autosuggestions
-    zsh-syntax-highlighting
     zsh-completions
-    fzf
     fzf-tab
     vi-mode
     extract     # Auto-extract archives
     copyfile    # Copies file content to clipboard
     copypath    # Copies file path to clipboard
+    zsh-autosuggestions
+    zsh-syntax-highlighting  # keep last
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -60,14 +61,20 @@ else
 fi
 
 alias sl='ls'
-alias ssh='ssh -A'
 alias ll='ls -l'
 alias la='ls -a'
 
-# History settings
-export HISTSIZE=50000
-export SAVEHIST=10000
-setopt HIST_IGNORE_DUPS
+# Agent forwarding is per-host, not global: anyone with root on a host you
+# forward to can use your keys. Put `ForwardAgent yes` under the specific Host
+# in ~/.ssh/config, or use ProxyJump/-J to reach boxes behind a bastion.
+
+# History settings (override Oh My Zsh's lib/history.zsh, sourced above)
+HISTSIZE=50000
+SAVEHIST=50000          # OMZ defaults this to 10000 and silently drops the rest
+setopt EXTENDED_HISTORY      # record timestamp and duration
+setopt HIST_IGNORE_ALL_DUPS  # keep only the most recent copy of a command
+setopt HIST_IGNORE_SPACE     # leading space keeps a command out of history
+setopt HIST_REDUCE_BLANKS
 unsetopt SHARE_HISTORY # Prevents overlapping history between panes
 
 # =============================================================================
@@ -79,10 +86,11 @@ if command -v starship >/dev/null; then
     eval "$(starship init zsh)"
 fi
 
-# Zoxide (Smart Directory Jumper) - Replaces 'cd' with 'z'
+# Zoxide (Smart Directory Jumper) - takes over 'cd' itself.
+# --cmd cd is the supported way to do this; `alias cd=z` misses plain `cd`
+# navigations and never learns from them. Interactive picker is `cdi`.
 if command -v zoxide >/dev/null; then
-    eval "$(zoxide init zsh)"
-    alias cd="z"
+    eval "$(zoxide init zsh --cmd cd)"
 fi
 
 # Eza (Modern ls)
@@ -160,11 +168,14 @@ if command -v rg >/dev/null; then
         done
 
         if [[ $legacy -eq 1 ]]; then
-            echo -e "\033[0;33m[Modern Unix Tip] Legacy 'grep' flags detected.\033[0m"
-            [[ "$*" == *"--include"* ]] && echo -e "  --include='*.py' -> -g '*.py'"
-            [[ "$*" == *"--exclude"* ]] && echo -e "  --exclude='*.py' -> -g '!*.py'"
-            [[ "$*" == *"-r"* || "$*" == *"-R"* ]] && echo -e "  -r/-R -> (recursive by default in rg)"
-            echo -e "\033[0;32mFalling back to system 'grep'...\033[0m"
+            # Tips go to stderr so they never land in a pipe or a $(...) capture.
+            {
+                echo -e "\033[0;33m[Modern Unix Tip] Legacy 'grep' flags detected.\033[0m"
+                [[ "$*" == *"--include"* ]] && echo -e "  --include='*.py' -> -g '*.py'"
+                [[ "$*" == *"--exclude"* ]] && echo -e "  --exclude='*.py' -> -g '!*.py'"
+                [[ "$*" == *"-r"* || "$*" == *"-R"* ]] && echo -e "  -r/-R -> (recursive by default in rg)"
+                echo -e "\033[0;32mFalling back to system 'grep'...\033[0m"
+            } >&2
             command grep "$@"
         else
             rg "$@"
@@ -184,12 +195,15 @@ if command -v fd >/dev/null; then
         done
 
         if [[ $legacy -eq 1 ]]; then
-            echo -e "\033[0;33m[Modern Unix Tip] Legacy 'find' flags detected.\033[0m"
-            [[ "$*" == *"-name"* ]] && echo -e "  -name 'foo' -> 'foo' (or -g 'foo')"
-            [[ "$*" == *"-iname"* ]] && echo -e "  -iname 'foo' -> -i 'foo'"
-            [[ "$*" == *"-type"* ]] && echo -e "  -type f/d   -> -t f/d"
-            [[ "$*" == *"-exec"* ]] && echo -e "  -exec ...   -> -x ..."
-            echo -e "\033[0;32mFalling back to system 'find'...\033[0m"
+            # Tips go to stderr so they never land in a pipe or a $(...) capture.
+            {
+                echo -e "\033[0;33m[Modern Unix Tip] Legacy 'find' flags detected.\033[0m"
+                [[ "$*" == *"-name"* ]] && echo -e "  -name 'foo' -> 'foo' (or -g 'foo')"
+                [[ "$*" == *"-iname"* ]] && echo -e "  -iname 'foo' -> -i 'foo'"
+                [[ "$*" == *"-type"* ]] && echo -e "  -type f/d   -> -t f/d"
+                [[ "$*" == *"-exec"* ]] && echo -e "  -exec ...   -> -x ..."
+                echo -e "\033[0;32mFalling back to system 'find'...\033[0m"
+            } >&2
             command find "$@"
         else
             fd "$@"
@@ -201,13 +215,10 @@ fi
 #  FZF & Interactive Tools
 # =============================================================================
 
-# Setup fzf
-if [ -f ~/.fzf.zsh ]; then
-    source ~/.fzf.zsh
-elif [ -f /usr/local/opt/fzf/install ]; then
-    # Fallback for Homebrew install location
-    [ -f /usr/local/opt/fzf/shell/key-bindings.zsh ] && source /usr/local/opt/fzf/shell/key-bindings.zsh
-    [ -f /usr/local/opt/fzf/shell/completion.zsh ] && source /usr/local/opt/fzf/shell/completion.zsh
+# Setup fzf. Since fzf 0.48 the binary ships its own shell integration, which
+# replaces ~/.fzf.zsh and the hardcoded Homebrew-prefix fallbacks.
+if command -v fzf >/dev/null; then
+    source <(fzf --zsh)
 fi
 
 # FZF Configuration: Stop looking at gitignore
@@ -270,4 +281,4 @@ bindkey -M vicmd v edit-command-line
 # =============================================================================
 #  Daily Tips
 # =============================================================================
-source $HOME/.zsh_tips.zsh
+[ -f "$HOME/.zsh_tips.zsh" ] && source "$HOME/.zsh_tips.zsh"

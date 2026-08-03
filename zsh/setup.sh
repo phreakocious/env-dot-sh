@@ -3,7 +3,23 @@
 # Define directories
 OMZ_DIR="$HOME/.oh-my-zsh"
 ZSH_CUSTOM="$OMZ_DIR/custom"
-SCRIPT_DIR="$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"  # absolute: symlinks below need it
+
+# Symlink, don't copy: edits in the repo then take effect immediately, and
+# re-running this script doesn't pile up backups of files it created itself.
+link() {
+    local src="$1" dst="$2"
+    if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+        echo "  already linked: $dst"
+        return
+    fi
+    if [ -e "$dst" ] || [ -L "$dst" ]; then
+        mv "$dst" "$dst.backup.$(date +%s)"
+        echo "  backed up existing $dst"
+    fi
+    ln -s "$src" "$dst"
+    echo "  linked $dst -> $src"
+}
 
 echo "Setting up modern Zsh environment for macOS..."
 
@@ -68,14 +84,18 @@ if [ ! -d "$ZSH_CUSTOM/plugins/fzf-tab" ]; then
   git clone https://github.com/Aloxaf/fzf-tab "$ZSH_CUSTOM/plugins/fzf-tab"
 fi
 
-# 3. Link .zshrc
-echo "Backing up existing .zshrc and linking new one..."
-[ -f "$HOME/.zshrc" ] && mv "$HOME/.zshrc" "$HOME/.zshrc.backup.$(date +%s)"
-cp "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
+# 3. Link config
+echo "Linking configuration..."
+link "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
+link "$SCRIPT_DIR/tips.zsh" "$HOME/.zsh_tips.zsh"
 
-# 4. Install Tips
-echo "Installing tips..."
-cp "$SCRIPT_DIR/tips.zsh" "$HOME/.zsh_tips.zsh"
+# 4. Wire up delta (installing it does nothing on its own)
+if command -v delta >/dev/null; then
+    echo "Configuring git to use delta as its pager..."
+    git config --global core.pager delta
+    git config --global interactive.diffFilter "delta --color-only"
+    git config --global delta.navigate true
+fi
 
 # 5. Setup User Binaries
 echo "Setting up user binaries..."

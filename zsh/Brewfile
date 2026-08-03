@@ -13,5 +13,9 @@ brew "fd"         # find replacement
 brew "fzf"        # fuzzy finder
 
 # Optional but recommended
-brew "tldr"       # Simplified man pages
-brew "delta"      # Better git diffs
+brew "tlrc"       # Simplified man pages (official Rust tldr client)
+brew "git-delta"  # Better git diffs
+
+# Required: eza --icons and starship's default prompt symbols are Nerd Font glyphs.
+# Without this they render as tofu. Remember to select it in your terminal profile.
+cask "font-hack-nerd-font"
