@@ -1,5 +1,6 @@
 # Core Shell
 brew "git"
+brew "coreutils"  # gls; .zshrc prefers it over BSD ls, and nothing else installs it
 
 # The Prompt
 brew "starship"

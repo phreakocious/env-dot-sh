@@ -81,6 +81,26 @@ unsetopt SHARE_HISTORY # Prevents overlapping history between panes
 #  Modern Unix Upgrades
 # =============================================================================
 
+# Claude Code replays a snapshot of this shell for its Bash tool, where output
+# is parsed by a model rather than read by a person.
+#
+# Measured 2026-09-21 in that shell, against a 140-entry directory:
+#     ls "$D" | wc -l        -> 140   correct, WITH a path argument
+#     cd "$D" && ls | wc -l  ->   0   bare ls, the form you actually write
+#     /bin/ls -1 | wc -l     -> 140   so the cwd was right either way
+# It fails only for bare `ls` and works in the form you'd use to double-check,
+# which is how it got believed. Does NOT reproduce under plain `zsh -c 'source
+# .zshrc'` -- something about the snapshot replay, not this file.
+#
+# zoxide's `cd` resolves by frecency, so a scripted `cd build` can land
+# somewhere else entirely. Ergonomics are for the human; keep them interactive.
+#
+# VERIFIED 2026-09-21 from a later session's Bash tool: CLAUDECODE=1 IS set in
+# the snapshot shell, so this guard is live there. Same 140-entry control:
+#     cd "$D" && ls | wc -l  -> 140   (was 0)
+# Re-aliasing ls to eza in that same shell put it straight back to 0, so the
+# check can report the failure, not only the pass. Re-check with:  alias ls
+if [[ -o interactive && -z $CLAUDECODE ]]; then
 # Starship Prompt Init
 if command -v starship >/dev/null; then
     eval "$(starship init zsh)"
@@ -167,6 +187,29 @@ fi
 #
 # So: type `rg` and `fd` when you want them, and `grep`/`find` stay honest —
 # which is also what you get on any server that doesn't have these installed.
+fi  # interactive-only ergonomics
+
+# No `else` branch here, deliberately -- an `unset` in one would be inert.
+# Claude Code's Bash tool is `zsh -c 'source <snapshot> && eval <cmd>'`, and the
+# snapshot (~/.claude/shell-snapshots/) is a dump of FUNCTIONS and ALIASES only:
+# measured 2026-09-21, 233 alias lines, 13600 lines of functions, and exactly one
+# export -- PATH. Everything else in the environment is inherited from the shell
+# that launched `claude`, which ran the block above with CLAUDECODE unset.
+#
+# So this file can WITHHOLD an alias from a tool shell (verified: the snapshot
+# contains no _ls_eza_wrapper) but cannot REMOVE an inherited export: the unset
+# runs in the capture shell, leaves no trace in a state dump, and the variable
+# arrives again from the process env. MANPAGER is still bat's there for that
+# reason. The one lever that DOES work is ~/.zshenv, which `zsh -c` reads on every
+# command, before the snapshot is sourced. Measured 2026-09-21 with a throwaway
+# ~/.zshenv holding `ZSHENV_PROBE=ran` and `unset MANPAGER`: both directions took
+# effect in the very next tool command -- the set proves the file was read, the
+# unset is the claim -- and with NO new session, since nothing there is captured.
+# Not worth a new dotfile for one cosmetic variable, but that is where to put it
+# if an inherited export ever does matter; setup.sh would need to link it too.
+#
+# Corollary for anything added above: an export inside the guard reaches a tool
+# shell anyway. Guard on the value, not on the block, if that ever matters.
 
 # =============================================================================
 #  FZF & Interactive Tools
@@ -247,4 +290,21 @@ bindkey -M vicmd v edit-command-line
 # =============================================================================
 #  Daily Tips
 # =============================================================================
-[ -f "$HOME/.zsh_tips.zsh" ] && source "$HOME/.zsh_tips.zsh"
+# tips.zsh ends in a bare `echo -e`, so sourcing it writes to stdout. In a shell
+# whose output a model parses, that prepends a random line to a command's result.
+[[ -o interactive && -z $CLAUDECODE ]] && [ -f "$HOME/.zsh_tips.zsh" ] && source "$HOME/.zsh_tips.zsh"
+
+# =============================================================================
+#  Project Tree
+# =============================================================================
+# Where your code lives. Defaults to ~/projects; set PROJECTS in ~/.zshrc.local
+# (sourced above, so it wins) if yours is elsewhere -- an external volume, say.
+#
+# Both forms on purpose. `~projects` is a zsh named directory and is nicer to
+# type, but `hash -d` is shell-local state that does not reach a non-interactive
+# shell: measured 2026-09-21, `echo ~projects` in Claude Code's Bash tool is
+# "no such user or named directory". An export is inherited by every child
+# process, so $PROJECTS is the form that works in a script or a tool shell.
+: ${PROJECTS:=$HOME/projects}
+export PROJECTS
+hash -d projects=$PROJECTS
