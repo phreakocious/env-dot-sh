@@ -43,15 +43,22 @@ The setup is automated via a bootstrap script. It will handle Homebrew, Oh My Zs
 git clone https://github.com/your-username/env-dot-sh.git
 cd env-dot-sh
 
-# Run the setup script
+# See exactly what it would do, and change nothing
+./zsh/setup.sh --dry-run
+
+# Run it (prints the same plan, then asks once before doing anything)
 ./zsh/setup.sh
 ```
+
+The plan is not a description written beside the code — it is the same code path
+with execution suppressed, so it cannot drift from what actually runs. Lines are
+printed shell-quoted, so you can paste any one of them back to check it.
 
 ### What the script does:
 1.  **Homebrew:** Installs Homebrew if missing and bundles all required tools via `zsh/Brewfile`.
 2.  **Oh My Zsh:** Installs the framework and essential third-party plugins.
 3.  **Config:** Backs up your existing `~/.zshrc`, then *symlinks* the repo copy — so edits here take effect immediately. Re-running is safe.
-4.  **Git:** Links `git/ignore` to `~/.config/git/ignore` so Finder and editor droppings are ignored in *every* repo on the machine, and points `git` at `delta` for diffs (three keys in `~/.gitconfig`).
+4.  **Git:** Links `git/ignore` to `~/.config/git/ignore` so Finder and editor droppings are ignored in *every* repo on the machine, and points `git` at `delta` for diffs. It copies `~/.gitconfig` aside before the first key it changes, and skips any key already at the wanted value — so a re-run on a configured machine writes nothing and leaves no backup.
 5.  **Utilities:** Sets up `~/bin` and links common applications like Sublime Text (`subl`) and Sublime Merge (`smerge`) if found.
 
 > **Set your terminal font to Hack Nerd Font afterwards.** The Brewfile installs it, but `eza --icons` and Starship's default prompt symbols render as tofu until your terminal profile actually selects it.
@@ -67,6 +74,12 @@ To keep the environment consistent, follow these steps when adding a new CLI too
 
 ### Local Overrides
 If you have machine-specific configurations (like work email or private aliases), add them to `~/.zshrc.local`. This file is automatically sourced at the end of `.zshrc` and is ignored by git.
+
+The one path you are likely to want there is your project tree, which defaults to `~/projects`:
+
+```zsh
+PROJECTS=/mnt/big-disk/code    # ~projects and $PROJECTS both follow this
+```
 
 ## Daily Tips
 Every time you open a new shell, a random tip is displayed from `zsh/tips.zsh`. This is a great way to build muscle memory for modern tools.
